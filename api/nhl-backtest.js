@@ -16,7 +16,7 @@ export default async function handler(req,res){
   const scored=result.rows.slice(warmup),eloScored=eloCandidate.rows.slice(warmup);
   const avg=k=>scored.length?scored.reduce((s,r)=>s+r[k],0)/scored.length:null;
   res.setHeader("Cache-Control","s-maxage=86400, stale-while-revalidate=604800");
-  return res.status(200).json({
+  const payload={
    model:"SPORTAI NHL historical baseline v0.1",
    season,audit,warmupGames:warmup,evaluatedGames:scored.length,
    scorecard:{brier:avg("brier"),logLoss:avg("logLoss"),goalMAE:avg("goalAE")},
@@ -25,6 +25,8 @@ export default async function handler(req,res){
    holdoutTest:tuneEloHoldout(games),
    regulationNote:"OT/SO games are evaluated as draws after 60 minutes.",
    sample:scored.slice(-10)
-  });
+  };
+  console.log("SPORTAI_NHL_HOLDOUT_RESULT",JSON.stringify({season,holdoutTest:payload.holdoutTest}));
+  return res.status(200).json(payload);
  }catch(e){return res.status(500).json({error:e.message});}
 }
