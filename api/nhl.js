@@ -60,6 +60,20 @@ function evaluationTemplate(forecast){
  }:null;
 }
 
+
+// Verified projected-lineup snapshot additions from NHL.com, 2026-10-01.
+// These enrich availability only; Test #001 probabilities remain frozen.
+const lineupNotes={
+"Chicago Blackhawks":{injured:["Connor Bedard","Andrew Mangiapane"],projectedGoalie:"Spencer Knight"},
+"Utah Mammoth":{injured:["Maveric Lamoureux"],projectedGoalie:"Karel Vejmelka"},
+"Tampa Bay Lightning":{injured:["Dominic James","Yanni Gourde"],projectedGoalie:"Andrei Vasilevskiy"},
+"New York Rangers":{injured:[],projectedGoalie:"Igor Shesterkin"}
+};
+for(const [team,x] of Object.entries(lineupNotes)){
+ injuries[team]=x.injured;
+ projectedGoalies[team]=x.projectedGoalie;
+}
+
 const games=[
 ["Buffalo Sabres","Columbus Blue Jackets","01:00"],["Philadelphia Flyers","New Jersey Devils","01:00"],["Tampa Bay Lightning","New York Rangers","01:00"],["Minnesota Wild","Nashville Predators","02:00"],["Seattle Kraken","Calgary Flames","03:00"],["Chicago Blackhawks","Utah Mammoth","03:30"],["Florida Panthers","San Jose Sharks","04:00"],["Edmonton Oilers","Vancouver Canucks","04:00"]
 ];
