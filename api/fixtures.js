@@ -23,11 +23,15 @@ export default async function handler(req, res) {
       const tb = b.start_time ? new Date(b.start_time).getTime() : Number.MAX_SAFE_INTEGER;
       return ta-tb;
     };
-    const scheduled = unique.filter(m => m.status === "scheduled" || m.status === "upcoming").sort(byTime);
-    const live = unique.filter(m => m.status === "live").sort(byTime);
-    const ordered = [...live, ...scheduled].slice(0, 60);
+    const now = Date.now();
+    const trulyLive = unique.filter(m => m.status === "live" && (!m.start_time || new Date(m.start_time).getTime() <= now)).sort(byTime);
+    const scheduled = unique.filter(m => {
+      const starts = m.start_time ? new Date(m.start_time).getTime() : 0;
+      return m.status === "scheduled" || m.status === "upcoming" || (m.status === "live" && starts > now);
+    }).sort(byTime);
+    const ordered = [...trulyLive, ...scheduled].slice(0, 60);
     res.setHeader("Cache-Control", "s-maxage=900, stale-while-revalidate=300");
-    res.status(200).json({ data: ordered, meta: { total: ordered.length, scheduled: scheduled.length, live: live.length, scope: "ATP/WTA/Challenger singles", itfEnabled: false } });
+    res.status(200).json({ data: ordered, meta: { total: ordered.length, scheduled: scheduled.length, live: trulyLive.length, scope: "ATP/WTA/Challenger singles", itfEnabled: false } });
   } catch (e) {
     res.status(502).json({ error: e.message || "Could not reach tennis data provider" });
   }
