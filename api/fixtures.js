@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     const scheduled = supported.filter(m => m.status === "scheduled");
     const live = supported.filter(m => m.status === "live");
     const finished = supported.filter(m => m.status === "finished");
-    const ordered = [...scheduled, ...live, ...finished].slice(0, 40);
+    const ordered = [...scheduled, ...live, ...finished].sort((a,b) => new Date(a.start_time || 0) - new Date(b.start_time || 0)).slice(0, 40);
     res.setHeader("Cache-Control", "s-maxage=900, stale-while-revalidate=300");
     res.status(200).json({ data: ordered, meta: { total: ordered.length, scheduled: scheduled.length, live: live.length, scope: "ATP/WTA/Challenger", itfEnabled: false } });
   } catch (e) {
