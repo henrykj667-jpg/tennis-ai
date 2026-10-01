@@ -1,17 +1,26 @@
 const BASE = "https://api.livetennisapi.com/api/public/v1";
 
+async function upstream(path, key) {
+  const r = await fetch(BASE + path, { headers: { Authorization: "Bearer " + key } });
+  const text = await r.text();
+  if (!r.ok) throw new Error("Live Tennis API " + r.status + ": " + text.slice(0,160));
+  return JSON.parse(text);
+}
+
 export default async function handler(req, res) {
   const key = process.env.LIVE_TENNIS_API_KEY;
   if (!key) return res.status(500).json({ error: "LIVE_TENNIS_API_KEY is not configured" });
-
   try {
-    const upstream = await fetch(BASE + "/fixtures?limit=30", {
-      headers: { Authorization: "Bearer " + key }
-    });
-    const body = await upstream.text();
+    const data = await upstream("/fixtures?limit=100", key);
+    const rows = Array.isArray(data.data) ? data.data : [];
+    const singles = rows.filter(m => !String(m.tour || "").includes("doubles"));
+    const scheduled = singles.filter(m => m.status === "scheduled");
+    const live = singles.filter(m => m.status === "live");
+    const finished = singles.filter(m => m.status === "finished");
+    const ordered = [...scheduled, ...live, ...finished].slice(0, 40);
     res.setHeader("Cache-Control", "s-maxage=900, stale-while-revalidate=300");
-    res.status(upstream.status).send(body);
-  } catch {
-    res.status(502).json({ error: "Could not reach tennis data provider" });
+    res.status(200).json({ data: ordered, meta: { total: ordered.length, scheduled: scheduled.length, live: live.length } });
+  } catch (e) {
+    res.status(502).json({ error: e.message || "Could not reach tennis data provider" });
   }
 }
