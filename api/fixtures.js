@@ -14,12 +14,13 @@ export default async function handler(req, res) {
     const data = await upstream("/fixtures?limit=100", key);
     const rows = Array.isArray(data.data) ? data.data : [];
     const singles = rows.filter(m => !String(m.tour || "").includes("doubles"));
-    const scheduled = singles.filter(m => m.status === "scheduled");
-    const live = singles.filter(m => m.status === "live");
-    const finished = singles.filter(m => m.status === "finished");
+    const supported = singles.filter(m => { const t=String(m.tour||"").toLowerCase(); return !t.includes("itf") && (t.includes("atp") || t.includes("wta") || t.includes("challenger")); });
+    const scheduled = supported.filter(m => m.status === "scheduled");
+    const live = supported.filter(m => m.status === "live");
+    const finished = supported.filter(m => m.status === "finished");
     const ordered = [...scheduled, ...live, ...finished].slice(0, 40);
     res.setHeader("Cache-Control", "s-maxage=900, stale-while-revalidate=300");
-    res.status(200).json({ data: ordered, meta: { total: ordered.length, scheduled: scheduled.length, live: live.length } });
+    res.status(200).json({ data: ordered, meta: { total: ordered.length, scheduled: scheduled.length, live: live.length, scope: "ATP/WTA/Challenger", itfEnabled: false } });
   } catch (e) {
     res.status(502).json({ error: e.message || "Could not reach tennis data provider" });
   }
