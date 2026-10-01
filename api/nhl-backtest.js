@@ -1,0 +1,24 @@
+import {seasonGames,auditGames} from "../lib/nhl-history.js";
+import {walkForward} from "../lib/nhl-backtest.js";
+
+export default async function handler(req,res){
+ try{
+  const season=String(req.query?.season||"20252026");
+  if(!/^20\d{6}$/.test(season))return res.status(400).json({error:"season must be YYYYYYYY"});
+  const games=await seasonGames(season),audit=auditGames(games);
+  if(!audit.valid)return res.status(500).json({season,audit,error:"Historical data audit failed"});
+  const result=walkForward(games);
+  const warmup=Math.min(100,result.rows.length);
+  const scored=result.rows.slice(warmup);
+  const avg=k=>scored.length?scored.reduce((s,r)=>s+r[k],0)/scored.length:null;
+  res.setHeader("Cache-Control","s-maxage=86400, stale-while-revalidate=604800");
+  return res.status(200).json({
+   model:"SPORTAI NHL historical baseline v0.1",
+   season,audit,warmupGames:warmup,evaluatedGames:scored.length,
+   scorecard:{brier:avg("brier"),logLoss:avg("logLoss"),goalMAE:avg("goalAE")},
+   calibrationNote:"Chronological walk-forward; each result updates the model only after its prediction.",
+   regulationNote:"OT/SO games are evaluated as draws after 60 minutes.",
+   sample:scored.slice(-10)
+  });
+ }catch(e){return res.status(500).json({error:e.message});}
+}
