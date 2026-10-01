@@ -2,6 +2,9 @@ import {seasonGames,auditGames} from "../lib/nhl-history.js";
 import {walkForward,tuneEloHoldout} from "../lib/nhl-backtest.js";
 
 export default async function handler(req,res){
+ // The automation bypass secret is injected by Vercel as a system env var.
+ // No secret is returned to the client; it is only used for internal protected fetches when needed.
+ const automationBypass=process.env.VERCEL_AUTOMATION_BYPASS_SECRET||null;
  try{
   const season=String(req.query?.season||"20252026");
   if(!/^20\d{6}$/.test(season))return res.status(400).json({error:"season must be YYYYYYYY"});
