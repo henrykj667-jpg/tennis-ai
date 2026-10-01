@@ -23,3 +23,5 @@ header{padding:12px 4px 20px;border:0}header b{font-size:21px;letter-spacing:-.0
 /* probability visibility fix */
 .prob big{color:#14212a!important;font-weight:900;opacity:1}
 .prob strong:last-child big{color:#526fd1!important}
+
+.group-title.collapsible{cursor:pointer;padding:11px 12px;border:1px solid #e1e8ec;border-radius:13px;background:#f7f9fa;user-select:none}.group-title.collapsible:hover{background:#f1f5f6}.group-title.collapsible i{font-style:normal;font-size:10px;letter-spacing:0;color:#71808a;margin-left:4px}
