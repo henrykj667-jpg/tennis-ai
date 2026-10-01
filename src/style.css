@@ -46,3 +46,15 @@ header{padding:12px 4px 20px;border:0}header b{font-size:21px;letter-spacing:-.0
 .shl-match-list .goal-mini small{display:block!important;font-size:9px!important;line-height:1.15!important;color:#7d8a92!important;white-space:normal!important}
 .shl-match-list .shl-match-card.active{border-color:#36ad82!important;background:#f8fffc!important;box-shadow:0 7px 20px rgba(22,151,111,.12)!important}
 @media(max-width:560px){.hockey-home{padding:18px!important}.shl-match-list .shl-match-card{min-height:82px!important;padding:14px!important}.shl-match-list .goal-mini{flex-basis:116px!important}.shl-match-list .goal-mini b{font-size:17px!important}}
+
+/* SHL compact team rows */
+.shl-match-list .shl-match-card{min-height:0!important;padding:14px 15px!important;overflow:visible!important}
+.shl-match-list .team-main{display:grid!important;grid-template-columns:auto 1fr!important;align-items:center!important;gap:5px 9px!important;min-width:0!important;flex:1!important}
+.shl-match-list .team-main strong{grid-column:1/2;font-size:15px!important}
+.shl-match-list .elo-badge{grid-column:2/3!important;justify-self:start!important;background:#eef3f5!important;border-radius:999px!important;padding:4px 7px!important;font-size:10px!important;color:#65747d!important}
+.shl-match-list .team-goals{grid-column:1/3!important;display:flex!important;align-items:center!important;gap:7px!important;margin-top:2px!important;color:#65747d!important;font-size:11px!important}
+.shl-match-list .team-goals span{font-size:11px!important;color:#65747d!important}
+.shl-match-list .team-goals b{font-size:12px!important;color:#17242d!important}
+.shl-match-list .team-goals i{font-style:normal;color:#bdc6cb}
+.shl-match-list .team-chevron{flex:0 0 auto!important;font-size:25px!important;color:#a0abb2!important;padding-left:8px!important}
+@media(max-width:560px){.shl-match-list .shl-match-card{min-height:0!important;padding:13px 14px!important;margin-bottom:8px!important}.shl-match-list .team-main strong{font-size:14px!important}}
