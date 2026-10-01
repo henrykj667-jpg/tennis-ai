@@ -47,7 +47,20 @@ function nextModelReadiness(away,home){
  };
 }
 
+
+// Evaluation schema for future frozen tests. Results are written only after games finish.
+// Keeping forecasts and outcomes separate prevents accidental look-ahead in model development.
+function evaluationTemplate(forecast){
+ return forecast?{
+   brier60:null,
+   logLoss60:null,
+   goalAbsoluteError:null,
+   evaluated:false,
+   metrics:["brier60","logLoss60","goalAbsoluteError"]
+ }:null;
+}
+
 const games=[
 ["Buffalo Sabres","Columbus Blue Jackets","01:00"],["Philadelphia Flyers","New Jersey Devils","01:00"],["Tampa Bay Lightning","New York Rangers","01:00"],["Minnesota Wild","Nashville Predators","02:00"],["Seattle Kraken","Calgary Flames","03:00"],["Chicago Blackhawks","Utah Mammoth","03:30"],["Florida Panthers","San Jose Sharks","04:00"],["Edmonton Oilers","Vancouver Canucks","04:00"]
 ];
-export default function handler(req,res){res.setHeader("Cache-Control","s-maxage=3600");res.status(200).json({test:"NHL Test #001",frozenAt:"2026-10-01T21:44:00+02:00",status:"pre-match snapshot",note:"Fixture set is frozen before puck drop. Model probabilities will only be added from pre-game data; results must never be used as model inputs for this test.",model:"NHL Goals v0.2 + goalie info v0.1",modelNote:"Frozen Test #001 remains v0.2. Next model is being built separately and will require verified home/away splits before venue effects can change a forecast.",games:games.map(([away,home,swedenTime])=>({date:"2026-10-02",away,home,swedenTime,forecast:model(away,home),goalies:{away:projectedGoalies[away]||null,home:projectedGoalies[home]||null,status:(projectedGoalies[away]||projectedGoalies[home])?"projected":"unknown"},availability:{away:injuries[away]||[],home:injuries[home]||[],source:"NHL.com pre-game snapshot"},nextModel:nextModelReadiness(away,home)}))});}
+export default function handler(req,res){res.setHeader("Cache-Control","s-maxage=3600");res.status(200).json({test:"NHL Test #001",frozenAt:"2026-10-01T21:44:00+02:00",status:"pre-match snapshot",note:"Fixture set is frozen before puck drop. Model probabilities will only be added from pre-game data; results must never be used as model inputs for this test.",model:"NHL Goals v0.2 + goalie info v0.1",modelNote:"Frozen Test #001 remains v0.2. Next model is being built separately and will require verified home/away splits before venue effects can change a forecast.",games:games.map(([away,home,swedenTime])=>({date:"2026-10-02",away,home,swedenTime,forecast:model(away,home),goalies:{away:projectedGoalies[away]||null,home:projectedGoalies[home]||null,status:(projectedGoalies[away]||projectedGoalies[home])?"projected":"unknown"},availability:{away:injuries[away]||[],home:injuries[home]||[],source:"NHL.com pre-game snapshot"},nextModel:nextModelReadiness(away,home),evaluation:evaluationTemplate(model(away,home))}))});}
