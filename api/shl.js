@@ -42,5 +42,16 @@ function warmStart(){
   return Object.fromEntries(previousSeason.map(([team,pts,gd])=>[team,1500+(pts-avg)*2.2+gd*.35]));
 }
 const expected=d=>1/(1+Math.pow(10,-d/400));
+function walkForward(rows){
+  const r=warmStart(), predictions=[]; let correct=0,brier=0,logloss=0;
+  for(const [date,home,away,hg,ag] of rows){
+    r[home]??=1500;r[away]??=1500;
+    const p=expected((r[home]+55)-r[away]), actual=hg>ag?1:0;
+    predictions.push({date,home,away,pHome:+p.toFixed(3),actual});
+    correct+=(p>=.5?1:0)===actual?1:0;brier+=(p-actual)**2;logloss+=-(actual*Math.log(Math.max(p,1e-9))+(1-actual)*Math.log(Math.max(1-p,1e-9)));
+    const k=24;r[home]+=k*(actual-p);r[away]+=k*((1-actual)-(1-p));
+  }
+  const n=rows.length;return{n,accuracy:n?correct/n:0,brier:n?brier/n:0,logloss:n?logloss/n:0,predictions,ratings:Object.entries(r).map(([team,elo])=>({team,elo:Math.round(elo)})).sort((a,b)=>b.elo-a.elo)}
+}
 function build(rows){const r=warmStart();for(const [,home,away,hg,ag] of rows){r[home]??=1500;r[away]??=1500;const homeAdv=55,e=expected((r[home]+homeAdv)-r[away]),s=hg>ag?1:0,k=24;r[home]+=k*(s-e);r[away]+=k*((1-s)-(1-e));}return Object.entries(r).map(([team,elo])=>({team,elo:Math.round(elo)})).sort((a,b)=>b.elo-a.elo)}
-export default function handler(req,res){res.setHeader("Cache-Control","s-maxage=86400, stale-while-revalidate=604800");res.status(200).json({season:SEASON,source:"Swehockey official statistics",status:"current-season results through 2026-09-29",games:seed.map(([date,home,away,homeGoals,awayGoals])=>({date,home,away,homeGoals,awayGoals})),ratings:build(seed),model:{name:"SHL Elo v0.2",base:1500,k:24,homeAdvantage:55,warmStart:"2025/26 final regular-season strength"},previousSeason:{games:364,teams:14},note:"2026/27 Elo is now warm-started from the official 2025/26 final regular-season table, then updated chronologically with current-season results. Next step is replacing table-derived warm start with match-by-match 2025/26 history and walk-forward validation."})}
+export default function handler(req,res){const test=walkForward(seed);res.setHeader("Cache-Control","s-maxage=86400, stale-while-revalidate=604800");res.status(200).json({season:SEASON,source:"Swehockey official statistics",status:"current-season results through 2026-09-29",games:seed.map(([date,home,away,homeGoals,awayGoals])=>({date,home,away,homeGoals,awayGoals})),ratings:build(seed),validation:{method:"walk-forward",n:test.n,accuracy:+test.accuracy.toFixed(3),brier:+test.brier.toFixed(3),logloss:+test.logloss.toFixed(3)},model:{name:"SHL Elo v0.2",base:1500,k:24,homeAdvantage:55,warmStart:"2025/26 final regular-season strength"},previousSeason:{games:364,teams:14},note:"2026/27 Elo is now warm-started from the official 2025/26 final regular-season table, then updated chronologically with current-season results. Walk-forward validation is now active on the completed 2026/27 games. The next data milestone is replacing the table-derived warm start with all 364 match-by-match results from 2025/26."})}
