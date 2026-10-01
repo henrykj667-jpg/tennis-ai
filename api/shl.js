@@ -28,6 +28,19 @@ const seed=[
 ["2026-09-29","Skellefteå AIK","Luleå HF",6,1],
 ["2026-09-29","Brynäs IF","Timrå IK",1,0]
 ];
+
+// 2025/26 regular-season finishing strength used only as a preseason warm start.
+// Points and goal difference are from the official final SHL table (52 games/team).
+const previousSeason=[
+["Skellefteå AIK",108,61],["Frölunda HC",101,55],["Växjö Lakers HC",94,14],["Rögle BK",93,32],
+["Färjestad BK",80,14],["Brynäs IF",78,11],["Luleå HF",77,5],["IF Malmö Redhawks",77,-11],
+["Djurgårdens IF",73,-28],["Örebro HK",66,-19],["Linköping HC",64,-29],["Timrå IK",63,-21],
+["HV 71",59,-36],["Leksands IF",59,-48]
+];
+function warmStart(){
+  const avg=previousSeason.reduce((s,x)=>s+x[1],0)/previousSeason.length;
+  return Object.fromEntries(previousSeason.map(([team,pts,gd])=>[team,1500+(pts-avg)*2.2+gd*.35]));
+}
 const expected=d=>1/(1+Math.pow(10,-d/400));
-function build(rows){const r={};for(const [,home,away,hg,ag] of rows){r[home]??=1500;r[away]??=1500;const homeAdv=55,e=expected((r[home]+homeAdv)-r[away]),s=hg>ag?1:0,k=24;r[home]+=k*(s-e);r[away]+=k*((1-s)-(1-e));}return Object.entries(r).map(([team,elo])=>({team,elo:Math.round(elo)})).sort((a,b)=>b.elo-a.elo)}
-export default function handler(req,res){res.setHeader("Cache-Control","s-maxage=86400, stale-while-revalidate=604800");res.status(200).json({season:SEASON,source:"Swehockey official statistics",status:"current-season results through 2026-09-29",games:seed.map(([date,home,away,homeGoals,awayGoals])=>({date,home,away,homeGoals,awayGoals})),ratings:build(seed),model:{name:"SHL Elo v0.1",base:1500,k:24,homeAdvantage:55},note:"Current-season Elo now uses all 27 completed SHL games through 2026-09-29. Historical warm-start seasons are still required before this becomes a serious pre-match model."})}
+function build(rows){const r=warmStart();for(const [,home,away,hg,ag] of rows){r[home]??=1500;r[away]??=1500;const homeAdv=55,e=expected((r[home]+homeAdv)-r[away]),s=hg>ag?1:0,k=24;r[home]+=k*(s-e);r[away]+=k*((1-s)-(1-e));}return Object.entries(r).map(([team,elo])=>({team,elo:Math.round(elo)})).sort((a,b)=>b.elo-a.elo)}
+export default function handler(req,res){res.setHeader("Cache-Control","s-maxage=86400, stale-while-revalidate=604800");res.status(200).json({season:SEASON,source:"Swehockey official statistics",status:"current-season results through 2026-09-29",games:seed.map(([date,home,away,homeGoals,awayGoals])=>({date,home,away,homeGoals,awayGoals})),ratings:build(seed),model:{name:"SHL Elo v0.2",base:1500,k:24,homeAdvantage:55,warmStart:"2025/26 final regular-season strength"},previousSeason:{games:364,teams:14},note:"2026/27 Elo is now warm-started from the official 2025/26 final regular-season table, then updated chronologically with current-season results. Next step is replacing table-derived warm start with match-by-match 2025/26 history and walk-forward validation."})}
