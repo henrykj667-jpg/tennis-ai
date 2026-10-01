@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./style.css";
 
@@ -34,6 +34,9 @@ function predict(a,b){
 function Bar({v}){ return <div className="bar"><i style={{width:(v*100)+"%"}} /></div>; }
 function App(){
   const names=Object.keys(players);
+  const [fixtures,setFixtures]=useState([]);
+  const [dataStatus,setDataStatus]=useState("Laddar riktiga matcher…");
+  useEffect(()=>{fetch("/api/fixtures").then(async r=>{const j=await r.json(); if(!r.ok) throw new Error(j.error||"API error"); const rows=Array.isArray(j.data)?j.data:[]; setFixtures(rows.slice(0,8)); setDataStatus(rows.length?`${rows.length} kommande matcher hittade`:"Inga kommande matcher hittades");}).catch(()=>setDataStatus("Kunde inte läsa matchdata"));},[]);
   const [a,setA]=useState("Hurkacz");
   const [b,setB]=useState("De Minaur");
   const r=useMemo(()=>predict(a,b),[a,b]);
@@ -43,6 +46,7 @@ function App(){
   return (
     <main>
       <header><b>TENNIS<span>AI</span></b><small>PRE-MATCH MODEL • v0.1</small></header>
+      <section className="card"><h2>Live datakoppling</h2><div className="stat"><span>Live Tennis API</span><b>{dataStatus}</b></div>{fixtures.map((m,i)=>{const p1=m.players?.p1?.name||m.player1?.name||m.home_player?.name||"Spelare 1";const p2=m.players?.p2?.name||m.player2?.name||m.away_player?.name||"Spelare 2";return <div className="stat" key={m.id||i}><span>{p1} vs {p2}</span><b>{m.surface||m.tournament?.surface||m.tour||"Tennis"}</b></div>})}</section>
       <section className="card">
         <label>Matchanalys</label>
         <div className="pick">
