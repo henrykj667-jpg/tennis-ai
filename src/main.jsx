@@ -37,7 +37,7 @@ function App(){
   const [fixtures,setFixtures]=useState([]);
   const [dataStatus,setDataStatus]=useState("Laddar riktiga matcher…");
   const [selectedFixture,setSelectedFixture]=useState(null);
-  useEffect(()=>{fetch("/api/fixtures").then(async r=>{const j=await r.json(); if(!r.ok) throw new Error(j.error||"API error"); const rows=Array.isArray(j.data)?j.data:[]; setFixtures(rows.slice(0,8)); setDataStatus(rows.length?`${rows.length} kommande matcher hittade`:"Inga kommande matcher hittades");}).catch(()=>setDataStatus("Kunde inte läsa matchdata"));},[]);
+  useEffect(()=>{fetch("/api/fixtures").then(async r=>{const j=await r.json(); if(!r.ok) throw new Error(j.error||"API error"); const rows=Array.isArray(j.data)?j.data:[]; setFixtures(rows.slice(0,12)); setDataStatus(rows.length?`${rows.length} singelmatcher hittade`:"Inga singelmatcher hittades");}).catch(()=>setDataStatus("Kunde inte läsa matchdata"));},[]);
   const [a,setA]=useState("Hurkacz");
   const [b,setB]=useState("De Minaur");
   const r=useMemo(()=>predict(a,b),[a,b]);
@@ -47,8 +47,8 @@ function App(){
   return (
     <main>
       <header><b>TENNIS<span>AI</span></b><small>PRE-MATCH MODEL • v0.1</small></header>
-      <section className="card"><h2>Live datakoppling</h2><div className="stat"><span>Live Tennis API</span><b>{dataStatus}</b></div>{fixtures.map((m,i)=>{const p1=m.player1_name||m.players?.p1?.name||m.player1?.name||"Spelare 1";const p2=m.player2_name||m.players?.p2?.name||m.player2?.name||"Spelare 2";return <button type="button" className="stat fixture" key={m.id||i} onClick={()=>setSelectedFixture(m)}><span>{p1} vs {p2}<small>{m.tournament||m.round||""} • {m.status||""}</small></span><b>{m.surface||m.tour||"Tennis"}</b></button>})}</section>
-      {selectedFixture&&<section className="card hero"><h2>Vald riktig match</h2><div className="prob"><strong>{selectedFixture.player1_name}</strong><em>VS</em><strong>{selectedFixture.player2_name}</strong></div><p className="note">{selectedFixture.tournament} • {selectedFixture.round} • {selectedFixture.surface}</p><p className="disclaimer">Matchen är nu vald från riktig data. Nästa modellsteg kopplar historiska spelarvärden till den här matchen.</p></section>}
+      <section className="card"><h2>Live datakoppling</h2><div className="stat"><span>Live Tennis API</span><b>{dataStatus}</b></div>{fixtures.map((m,i)=>{const p1=m.player1_name||m.players?.p1?.name||m.player1?.name||"Spelare 1";const p2=m.player2_name||m.players?.p2?.name||m.player2?.name||"Spelare 2";return <button type="button" className="stat fixture" key={m.id||i} onClick={()=>setSelectedFixture(m)}><span>{p1} vs {p2}<small>{m.tournament||m.round||""} • {m.status==="scheduled"?"KOMMANDE":m.status==="live"?"LIVE":m.status==="finished"?"AVSLUTAD":m.status||""}</small></span><b>{m.surface||m.tour||"Tennis"}</b></button>})}</section>
+      {selectedFixture&&<section className="card hero"><h2>Vald riktig match</h2><div className="prob"><strong>{selectedFixture.player1_name}</strong><em>VS</em><strong>{selectedFixture.player2_name}</strong></div><p className="note">{selectedFixture.tournament} • {selectedFixture.round} • {selectedFixture.surface} • {selectedFixture.start_time?new Date(selectedFixture.start_time).toLocaleString("sv-SE",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):""}</p><p className="disclaimer">Matchen är nu vald från riktig data. Nästa modellsteg kopplar historiska spelarvärden till den här matchen.</p></section>}
       <section className="card">
         <label>Matchanalys</label>
         <div className="pick">
