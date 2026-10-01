@@ -1,5 +1,5 @@
 import {seasonGames,auditGames} from "../lib/nhl-history.js";
-import {walkForward} from "../lib/nhl-backtest.js";
+import {walkForward,tuneEloHoldout} from "../lib/nhl-backtest.js";
 
 export default async function handler(req,res){
  try{
@@ -19,6 +19,7 @@ export default async function handler(req,res){
    scorecard:{brier:avg("brier"),logLoss:avg("logLoss"),goalMAE:avg("goalAE")},
    eloHomeCandidate:{weight:0.35,brier:eloScored.reduce((s,r)=>s+r.brier,0)/eloScored.length,logLoss:eloScored.reduce((s,r)=>s+r.logLoss,0)/eloScored.length,goalMAE:eloScored.reduce((s,r)=>s+r.goalAE,0)/eloScored.length},
    calibrationNote:"Chronological walk-forward; each result updates the model only after its prediction.",
+   holdoutTest:tuneEloHoldout(games),
    regulationNote:"OT/SO games are evaluated as draws after 60 minutes.",
    sample:scored.slice(-10)
   });
