@@ -25,3 +25,5 @@ header{padding:12px 4px 20px;border:0}header b{font-size:21px;letter-spacing:-.0
 .prob strong:last-child big{color:#526fd1!important}
 
 .group-title.collapsible{cursor:pointer;padding:11px 12px;border:1px solid #e1e8ec;border-radius:13px;background:#f7f9fa;user-select:none}.group-title.collapsible:hover{background:#f1f5f6}.group-title.collapsible i{font-style:normal;font-size:10px;letter-spacing:0;color:#71808a;margin-left:4px}
+
+.model-info{padding:0;overflow:hidden}.model-info-toggle{width:100%;border:0;background:transparent;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;font:inherit;cursor:pointer;color:#17242d}.model-info-toggle span{font-size:16px;font-weight:850}.model-info-toggle b{font-size:11px;color:#71808a}.model-info-body{padding:0 20px 20px;border-top:1px solid #e6ecef}.model-info-body>.disclaimer{margin-top:16px}.model-info-body>.card{box-shadow:none;border:0;padding:0;margin-top:18px;background:transparent}
