@@ -17,7 +17,23 @@ const projectedGoalies={
 "Edmonton Oilers":"Devon Levi"
 };
 
+
+// Frozen pre-game availability snapshot from NHL.com projected-lineup/status reports, 2026-10-01.
+// Informational in Test #001: it does not retroactively change the already frozen v0.2 probabilities.
+const injuries={
+"Buffalo Sabres":["Olen Zellweger","Conor Timmins","Alex Lyon","Jason Zucker"],
+"Columbus Blue Jackets":["Dante Fabbro","Ivan Provorov","Damon Severson","Isac Lundestrom"],
+"Philadelphia Flyers":["Denver Barkey","Nikita Grebenkin"],
+"New Jersey Devils":["Johnathan Kovacevic","Connor Brown"],
+"Minnesota Wild":["Brock Faber","Filip Gustavsson"],
+"Nashville Predators":[],
+"Florida Panthers":["Brad Marchand","Jonah Gadjovich"],
+"San Jose Sharks":["Adam Gaudette"],
+"Edmonton Oilers":["Zach Hyman","Frederik Andersen","Jason Dickinson","Mattias Janmark","Ryan Nugent-Hopkins","Alec Regula","Matt Savoie"],
+"Vancouver Canucks":["Thatcher Demko","Filip Chytil"]
+};
+
 const games=[
 ["Buffalo Sabres","Columbus Blue Jackets","01:00"],["Philadelphia Flyers","New Jersey Devils","01:00"],["Tampa Bay Lightning","New York Rangers","01:00"],["Minnesota Wild","Nashville Predators","02:00"],["Seattle Kraken","Calgary Flames","03:00"],["Chicago Blackhawks","Utah Mammoth","03:30"],["Florida Panthers","San Jose Sharks","04:00"],["Edmonton Oilers","Vancouver Canucks","04:00"]
 ];
-export default function handler(req,res){res.setHeader("Cache-Control","s-maxage=3600");res.status(200).json({test:"NHL Test #001",frozenAt:"2026-10-01T21:44:00+02:00",status:"pre-match snapshot",note:"Fixture set is frozen before puck drop. Model probabilities will only be added from pre-game data; results must never be used as model inputs for this test.",model:"NHL Goals v0.2 + goalie info v0.1",modelNote:"Pre-match development snapshot using 2025/26 team scoring and conceding baselines. Probabilities are for 60-minute outcomes; goalie layer remains separate.",games:games.map(([away,home,swedenTime])=>({date:"2026-10-02",away,home,swedenTime,forecast:model(away,home),goalies:{away:projectedGoalies[away]||null,home:projectedGoalies[home]||null,status:(projectedGoalies[away]||projectedGoalies[home])?"projected":"unknown"}}))});}
+export default function handler(req,res){res.setHeader("Cache-Control","s-maxage=3600");res.status(200).json({test:"NHL Test #001",frozenAt:"2026-10-01T21:44:00+02:00",status:"pre-match snapshot",note:"Fixture set is frozen before puck drop. Model probabilities will only be added from pre-game data; results must never be used as model inputs for this test.",model:"NHL Goals v0.2 + goalie info v0.1",modelNote:"Pre-match development snapshot using 2025/26 team scoring and conceding baselines. Probabilities are for 60-minute outcomes; goalie layer remains separate.",games:games.map(([away,home,swedenTime])=>({date:"2026-10-02",away,home,swedenTime,forecast:model(away,home),goalies:{away:projectedGoalies[away]||null,home:projectedGoalies[home]||null,status:(projectedGoalies[away]||projectedGoalies[home])?"projected":"unknown"},availability:{away:injuries[away]||[],home:injuries[home]||[],source:"NHL.com pre-game snapshot"}}))});}
