@@ -1,13 +1,7 @@
-const BASE="https://api.livetennisapi.com/api/public/v1";
-async function get(path,key){const r=await fetch(BASE+path,{headers:{Authorization:"Bearer "+key}});const t=await r.text();if(!r.ok)throw new Error("API "+r.status+": "+t.slice(0,160));return JSON.parse(t)}
-export default async function handler(req,res){
- const key=process.env.LIVE_TENNIS_API_KEY,id=String(req.query?.id||"").replace(/[^0-9]/g,"");
- if(!key)return res.status(500).json({error:"API key missing"});if(!id)return res.status(400).json({error:"player id required"});
- try{
-  const fixture=await get("/fixtures?player_id="+id+"&limit=100",key);
-  let rows=Array.isArray(fixture.data)?fixture.data:[];
-  rows=rows.filter(m=>String(m.player1_id)===id||String(m.player2_id)===id);
-  res.setHeader("Cache-Control","s-maxage=3600, stale-while-revalidate=600");
-  return res.status(200).json({data:rows,source:"fixtures",meta:{count:rows.length}});
- }catch(e){return res.status(502).json({error:e.message||"History fetch failed"})}
-}
+const MANIFEST="https://stats.tennismylife.org/api/data-files";
+function csv(line){let a=[],s="",q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(q&&line[i+1]==='"'){s+='"';i++}else q=!q}else if(c===","&&!q){a.push(s);s=""}else s+=c}a.push(s);return a}
+function key(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z ]/g," ").replace(/\s+/g," ").trim()}
+function same(shortName,fullName){const a=key(shortName).split(" "),b=key(fullName).split(" ");if(!a.length||!b.length)return false;const surname=a[a.length-1];if(b[b.length-1]!==surname)return false;const first=a[0]?.[0];return !first||b[0]?.[0]===first}
+async function rows(url,name){const r=await fetch(url);if(!r.ok)return[];const text=await r.text(),lines=text.split(/\r?\n/).filter(Boolean);if(lines.length<2)return[];const h=csv(lines[0]);const ix=x=>h.indexOf(x);let out=[];for(const line of lines.slice(1)){const v=csv(line),w=v[ix("winner_name")],l=v[ix("loser_name")];if(!same(name,w)&&!same(name,l))continue;out.push({date:v[ix("tourney_date")],surface:v[ix("surface")],won:same(name,w),winner_name:w,loser_name:l,tournament:v[ix("tourney_name")],round:v[ix("round")]})}return out}
+export default async function handler(req,res){const name=String(req.query?.name||""),tour=String(req.query?.tour||"atp");if(!name)return res.status(400).json({error:"player name required"});
+try{const mr=await fetch(MANIFEST);const m=await mr.json(),files=Array.isArray(m.files)?m.files:[];const wants=tour.includes("wta")?["2026_wta.csv","2025_wta.csv"]:tour.includes("challenger")?["2026_challenger.csv","2025_challenger.csv"]:["2026.csv","2025.csv"];let all=[];for(const wanted of wants){const f=files.find(x=>x.name===wanted);if(f?.url)all.push(...await rows(f.url,name))}all.sort((a,b)=>String(b.date).localeCompare(String(a.date)));res.setHeader("Cache-Control","s-maxage=21600, stale-while-revalidate=3600");res.status(200).json({data:all.slice(0,30),source:"TennisMyLife development dataset",license:"non-commercial development only"})}catch(e){res.status(502).json({error:e.message||"history unavailable"})}}
