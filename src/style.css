@@ -19,3 +19,7 @@ header{padding:12px 4px 20px;border:0}header b{font-size:21px;letter-spacing:-.0
 @media(max-width:560px){main{padding:14px 12px 55px}header{padding:10px 3px 16px}.match-picker{padding:16px}.fixture-card{padding:15px}.fixture-players strong{font-size:15px}.card{border-radius:20px}.prob big{font-size:30px}}
 
 .fixture-group{display:grid;gap:10px}.fixture-group+.fixture-group{margin-top:22px}.group-title{display:flex;align-items:center;gap:9px;padding:2px 2px 7px;border-bottom:1px solid #e2e9ec;font-size:11px;font-weight:900;letter-spacing:.1em;color:#73818a}.group-title b{margin-left:auto;min-width:24px;height:24px;display:grid;place-items:center;border-radius:8px;background:#edf2f4;color:#617079;font-size:10px}.group-title.live span{color:#0a8b63}.group-title.live:before{content:"";width:7px;height:7px;border-radius:50%;background:#16a875;box-shadow:0 0 0 4px #daf4e9}.group-title.scheduled span{color:#426aa8}.group-title.finished span{color:#89959d}
+
+/* probability visibility fix */
+.prob big{color:#14212a!important;font-weight:900;opacity:1}
+.prob strong:last-child big{color:#526fd1!important}
