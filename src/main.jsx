@@ -13,9 +13,18 @@ const players = {
   Rublev:{elo:1950,surface:1960,form:5,serve:.66,ret:.39}
 };
 const logistic = x => 1/(1+Math.pow(10,-x/400));
+function factors(a,b){
+  const A=players[a],B=players[b];
+  return [
+    ["Overall Elo", .5*(A.elo-B.elo)],
+    ["Surface Elo", .3*(A.surface-B.surface)],
+    ["Serve + Return", 220*((A.serve+A.ret)-(B.serve+B.ret))],
+    ["Recent form", 7*(A.form-B.form)]
+  ];
+}
 function predict(a,b){
   const A=players[a], B=players[b];
-  const d=.5*(A.elo-B.elo)+.3*(A.surface-B.surface)+220*((A.serve+A.ret)-(B.serve+B.ret))+7*(A.form-B.form);
+  const d=factors(a,b).reduce((sum,item)=>sum+item[1],0);
   const p=logistic(d), set=logistic(d*.78), pa=p, pb=1-p;
   let scores=[["2–0",pa*set],["2–1",pa*(1-set)],["1–2",pb*set],["0–2",pb*(1-set)]];
   const total=scores.reduce((sum,item)=>sum+item[1],0);
@@ -28,6 +37,9 @@ function App(){
   const [a,setA]=useState("Hurkacz");
   const [b,setB]=useState("De Minaur");
   const r=useMemo(()=>predict(a,b),[a,b]);
+  const why=useMemo(()=>factors(a,b),[a,b]);
+  const spread=Math.max(...why.map(x=>Math.abs(x[1])));
+  const confidence=spread>55?"HÖG":spread>25?"MEDEL":"LÅG";
   return (
     <main>
       <header><b>TENNIS<span>AI</span></b><small>PRE-MATCH MODEL • v0.1</small></header>
@@ -48,7 +60,7 @@ function App(){
         <div className="card"><h2>Set 1</h2><div className="stat"><span>{a}</span><b>{(r.set*100).toFixed(1)}%</b></div><div className="stat"><span>{b}</span><b>{((1-r.set)*100).toFixed(1)}%</b></div><div className="stat"><span>Förväntade games</span><b>{r.games.toFixed(1)}</b></div></div>
         <div className="card"><h2>Matchresultat</h2>{r.scores.map(([score,p])=><div key={score} className="stat"><span>{score}</span><b>{(p*100).toFixed(1)}%</b></div>)}</div>
       </section>
-      <section className="card"><h2>Modellfaktorer</h2><div className="chips"><span>Elo</span><span>Surface Elo</span><span>Form</span><span>Serve</span><span>Return</span></div><p className="disclaimer">Prototypdata. Nästa steg är automatisk matchdata + historisk backtesting och kalibrering.</p></section>
+      <section className="card"><h2>Varför säger modellen så?</h2>{why.map(([name,value])=><div key={name} className="stat"><span>{name}</span><b>{value===0?"0":(value>0?"+":"")+value.toFixed(1)} {value>0?a:value<0?b:""}</b></div>)}<div className="stat"><span>Model confidence</span><b>{confidence}</b></div><p className="disclaimer">Positivt värde gynnar {a}, negativt värde gynnar {b}. Confidence beskriver hur tydliga modellens signaler är – inte vinstchansen.</p></section><section className="card"><h2>Modellfaktorer</h2><div className="chips"><span>Elo</span><span>Surface Elo</span><span>Form</span><span>Serve</span><span>Return</span></div><p className="disclaimer">Prototypdata. Nästa steg är automatisk matchdata + historisk backtesting och kalibrering.</p></section>
     </main>
   );
 }
