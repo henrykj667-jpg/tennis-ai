@@ -67,3 +67,16 @@ header{padding:12px 4px 20px;border:0}header b{font-size:21px;letter-spacing:-.0
 .goalie-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:9px}.goalie-row span{padding:7px 6px;border-radius:9px;background:#f4f7f8;color:#53636c;font-size:9px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .injury-box{margin-top:8px;border-top:1px solid #edf1f3;padding-top:7px}.injury-box summary{cursor:pointer;color:#7a8991;font-size:9px;font-weight:700}.injury-box>div{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:7px}.injury-box span{font-size:8px;line-height:1.35;color:#7a8991}.injury-box span b{display:block;color:#3c4b53;font-size:9px;margin-bottom:2px}
+
+/* Tennis compact match overview */
+.fixture-row{width:100%;display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:9px;padding:10px 11px;margin:6px 0;border:1px solid #e2e9ec;border-radius:12px;background:#fff;color:#23333c;text-align:left;cursor:pointer}
+.fixture-row.active{border-color:#36ad82;background:#f7fffb;box-shadow:0 4px 14px rgba(22,151,111,.09)}
+.fixture-row-time{font-size:11px;font-weight:800;color:#71808a}
+.fixture-row-players{display:grid;grid-template-columns:auto 12px auto;align-items:center;justify-content:start;gap:4px;min-width:0;font-size:12px}
+.fixture-row-players b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fixture-row-players i{font-style:normal;color:#a4afb5;text-align:center}
+.fixture-row-players small{grid-column:1/4;color:#89969d;font-size:9px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.status-dot{font-size:18px;color:#9aa7ad;font-weight:800}.status-dot.live{font-size:9px;color:#d64040;background:#fff0f0;border-radius:999px;padding:5px 7px}
+.show-more{width:100%;padding:10px;border:0;background:transparent;color:#2e8e70;font-weight:800;font-size:11px;cursor:pointer}
+.group-title.live{position:sticky;top:6px;z-index:2}
+@media(max-width:560px){.fixture-row{grid-template-columns:42px minmax(0,1fr) auto;padding:9px 10px}.fixture-row-players{font-size:11px}}
