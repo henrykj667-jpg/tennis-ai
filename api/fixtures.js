@@ -40,10 +40,10 @@ export default async function handler(req, res) {
       return ta-tb;
     };
     const now = Date.now();
-    const trulyLive = unique.filter(m => m.status === "live").sort(byTime);
+    // Safety guard: provider status can occasionally mark future fixtures as live.\n    // A fixture can only be LIVE once its scheduled start time has been reached.\n    const trulyLive = unique.filter(m => {\n      if (m.status !== "live") return false;\n      if (!m.start_time) return true;\n      const starts = new Date(m.start_time).getTime();\n      return Number.isFinite(starts) && starts <= now;\n    }).sort(byTime);
     const scheduled = unique.filter(m => {
       const starts = m.start_time ? new Date(m.start_time).getTime() : 0;
-      return m.status === "scheduled";
+      // Future time always wins over a bad upstream LIVE flag.\n      if (m.start_time) {\n        const starts = new Date(m.start_time).getTime();\n        if (Number.isFinite(starts) && starts > now) return true;\n      }\n      return m.status === "scheduled";
     }).sort(byTime);
     const finished = unique.filter(m => m.status === "finished").sort((a,b)=>byTime(b,a));
     const ordered = [...trulyLive, ...scheduled, ...finished.slice(0,10)].slice(0, 60);
